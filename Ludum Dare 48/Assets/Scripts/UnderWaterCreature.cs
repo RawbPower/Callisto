@@ -19,6 +19,7 @@ public class UnderWaterCreature : MonoBehaviour
     protected float mass;
     private Vector2 velocity;
     protected Vector2 hitForce;
+    protected float rotation;
 
     private Rigidbody2D rb2d;
 
@@ -28,6 +29,7 @@ public class UnderWaterCreature : MonoBehaviour
         rb2d = gameObject.GetComponent<Rigidbody2D>();
         mass = density * volume;
         hitForce = Vector2.zero;
+        rotation = 0.0f;
     }
 
     // Update is called once per frame
@@ -62,6 +64,8 @@ public class UnderWaterCreature : MonoBehaviour
         }
 
         rb2d.AddForce(new Vector2(0.0f, -0.5f * velocity.y * dragCoefficient * areaTop));
+
+        transform.localRotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y, rotation);
 
         /*if (Input.GetKey(KeyCode.E))
         {

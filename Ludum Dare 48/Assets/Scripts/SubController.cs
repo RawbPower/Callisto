@@ -7,6 +7,9 @@ public class SubController : UnderWaterCreature
 {
     public float waterRatio;
     public float waterFillRate = 0.2f;
+    public float normalPropulsion;
+    public float dashPropulsion;
+    public float rotationRate;
 
     public float sonarRadius = 49.0f;
     public float sonarMaxDist = 100.0f;
@@ -26,6 +29,9 @@ public class SubController : UnderWaterCreature
 
     private float depth;
     private bool sinkSound;
+    private float propAngle;
+    private float propAngleRounded;
+    private float desiredPropAngle;
 
     private float vertical;
     private float horizontal;
@@ -41,6 +47,8 @@ public class SubController : UnderWaterCreature
         waterbar.SetWaterRatio(waterRatio);
         depth = 0;
         sinkSound = false;
+        propAngle = 0.0f;
+        desiredPropAngle = propAngle;
     }
 
     void Update()
@@ -48,11 +56,56 @@ public class SubController : UnderWaterCreature
         vertical = Input.GetAxisRaw("Vertical");
         horizontal = Input.GetAxisRaw("Horizontal");
 
-        propDirection = new Vector2(horizontal, 0.0f);
+	    desiredPropAngle = (Mathf.Abs(horizontal) > 0.0f) ? Ramp(vertical, -0.4f, 0.4f, -45.0f, 45.0f) : 0.0f;
 
-        if (vertical < 0.0f)
+        if (desiredPropAngle > propAngle)
         {
-            waterRatio += waterFillRate * Time.deltaTime;
+            propAngle += rotationRate * Time.deltaTime;
+        }
+        else
+        {
+            propAngle -= rotationRate * Time.deltaTime;
+        }
+
+        if (desiredPropAngle < 0.0f)
+        {
+            if (propAngle < desiredPropAngle)
+            {
+                propAngle = desiredPropAngle;
+            }
+        }
+        else if (desiredPropAngle > 0.0f)
+        {
+            if (propAngle > desiredPropAngle)
+            {
+                propAngle = desiredPropAngle;
+            }
+        }
+
+        propAngleRounded = 5.0f * Mathf.RoundToInt(propAngle / 5.0f);
+
+        base.rotation = propAngleRounded;
+
+        //transform.localRotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y, propAngle);
+
+
+        /*if (Input.GetKey("e"))
+        {
+            transform.localRotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y, transform.eulerAngles.z + rotationRate*Time.deltaTime);
+        }
+
+        if (Input.GetKey("q"))
+        {
+            transform.localRotation = Quaternion.Euler(transform.eulerAngles.x, transform.eulerAngles.y, transform.eulerAngles.z - rotationRate * Time.deltaTime);
+        }*/
+
+        propDirection = new Vector2(horizontal * Mathf.Cos(propAngle*Mathf.Deg2Rad), Mathf.Abs(horizontal) * Mathf.Sin(propAngle * Mathf.Deg2Rad));
+
+        //propDirection = new Vector2(horizontal, vertical);
+
+        if (Input.mouseScrollDelta.y > 0.0f)
+        {
+            waterRatio -= Input.mouseScrollDelta.y * waterFillRate * Time.deltaTime;
             if (!bubblesTop.isEmitting)
             {
                 bubblesTop.Play();
@@ -65,9 +118,9 @@ public class SubController : UnderWaterCreature
                 bubblesTop.Stop(true, ParticleSystemStopBehavior.StopEmitting);
             }
 
-            if (vertical > 0.0f)
+            if (Input.mouseScrollDelta.y < 0.0f)
             {
-                waterRatio -= waterFillRate * Time.deltaTime;
+                waterRatio -= Input.mouseScrollDelta.y * waterFillRate * Time.deltaTime;
             }
         }
 
@@ -101,6 +154,15 @@ public class SubController : UnderWaterCreature
             {
                 bubblesRight.Stop(true, ParticleSystemStopBehavior.StopEmitting);
             }
+        }
+
+        if (Input.GetKey("space"))
+        {
+            base.propulsion = dashPropulsion;
+        }
+        else
+        {
+            base.propulsion = normalPropulsion;
         }
 
         waterbar.SetWaterRatio(waterRatio);

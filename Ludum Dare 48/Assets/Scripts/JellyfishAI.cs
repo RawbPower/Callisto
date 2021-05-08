@@ -9,14 +9,14 @@ public class JellyfishAI : UnderWaterCreature
     public float propCooldown = 5.0f;
     public ParticleSystem bubbles;
 
-    private float rotation;
+    private float jellyRotation;
     private float propTimer;
 
     // Start is called before the first frame update
     protected override void Start()
     {
         base.Start();
-        rotation = 0.0f;
+        jellyRotation = 0.0f;
         propTimer = 0.0f;
     }
 
@@ -25,9 +25,9 @@ public class JellyfishAI : UnderWaterCreature
     {
         if (propTimer <= 0.0f)
         {
-            rotation += Random.Range(-rotationStepRange, rotationStepRange);
-            transform.eulerAngles = new Vector3(0.0f, 0.0f, rotation);
-            base.propDirection = new Vector2(-Mathf.Sin(rotation * Mathf.Deg2Rad), Mathf.Cos(rotation * Mathf.Deg2Rad));
+            jellyRotation += Random.Range(-rotationStepRange, rotationStepRange);
+            transform.eulerAngles = new Vector3(0.0f, 0.0f, jellyRotation);
+            base.propDirection = new Vector2(-Mathf.Sin(jellyRotation * Mathf.Deg2Rad), Mathf.Cos(jellyRotation * Mathf.Deg2Rad));
             propTimer = propCooldown;
 
             bubbles.Play();
